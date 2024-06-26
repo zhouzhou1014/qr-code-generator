@@ -240,4 +240,4 @@ def qr_code_generation(qrCodeStatus, fileName, qr_size, logo_name=None, font_nam
         print("请选择正确的二维码生成方式")
 
 
-qr_code_generation(8, 'shop_01.xlsx', 300, '1.png', 'simhei.ttf')
+qr_code_generation(2, 'shop_01.xlsx', 300, '1.png', 'simhei.ttf')
