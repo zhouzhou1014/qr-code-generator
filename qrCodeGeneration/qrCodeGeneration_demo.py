@@ -45,48 +45,32 @@ def generate_qr_code(fileName, qr_size):
             img = img.resize((qr_size, qr_size), Image.Resampling.LANCZOS)
 
             # 获取文件的目录
-            directory = os.path.join(QRCodes_path, str(item['店铺ID']))
+            directory = os.path.join(QRCodes_path, sheet_name)
 
             # 如果目录不存在，则创建目录
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
             # 将二维码图像保存到指定路径
-            file_path_png = os.path.join(directory, f"{item['店铺ID']}_{item['桌台名称']}.png")
+            file_path_png = os.path.join(directory, f"{item['文字标签']}.png")
             img.save(file_path_png)
             print(f"二维码已保存到 {file_path_png}")
 
 
 # 带有logo的二维码
-def add_logo_to_qr(img, logo_path):
-    logo = Image.open(logo_path)
+def add_logo_to_qr(qr_img, logo_path):
+    """
+    向二维码图像中添加Logo
+    :param qr_img: 二维码图像对象
+    :param logo_path: Logo文件路径
+    """
+    logo = Image.open(logo_path).convert("RGBA")
+    logo_size = qr_img.size[0] // 4
+    logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
 
-    # 将Logo剪裁为圆形
-    # mask = Image.new('L', logo.size, 0)
-    # draw = ImageDraw.Draw(mask)
-    # draw.ellipse((0, 0, logo.size[0], logo.size[1]), fill=255)
-
-    # 确保 logo 是 RGBA 模式
-    logo = logo.convert("RGBA")
-    # mask = mask.convert("L")
-
-    # 调整Logo大小
-    # logo_width, logo_height = logo.size
-    # qr_width, qr_height = img.size
-    # factor = 4  # 控制Logo大小的比例因子
-    # size = (qr_width // factor, qr_height // factor)
-    # logo = logo.resize(size, Image.Resampling.LANCZOS)
-    # mask = mask.resize(size, Image.Resampling.LANCZOS)
-    # 调整Logo大小
-    logo_width, logo_height = logo.size
-    qr_width, qr_height = img.size
-    factor = 4  # 控制Logo大小的比例因子
-    size = (qr_width // factor, qr_height // factor)
-    logo = logo.resize(size, Image.Resampling.LANCZOS)
-
-    # 将Logo粘贴到二维码中心
-    pos = ((qr_width - logo.size[0]) // 2, (qr_height - logo.size[1]) // 2)
-    img.paste(logo, pos, logo)
+    # 计算Logo在二维码图像中的位置
+    pos = ((qr_img.size[0] - logo_size) // 2, (qr_img.size[1] - logo_size) // 2)
+    qr_img.paste(logo, pos, logo)
 
 
 def generate_qr_code_with_logo(data, logo_path, save_path, qr_size):
@@ -115,11 +99,11 @@ def generate_qr_code_with_logo(data, logo_path, save_path, qr_size):
     print(f"二维码已保存到 {save_path}")
 
 
-def generate_qr_code_with_logo_text(data, logo_path, save_path, qr_size, text, font_name):
+def generate_qr_code_with_logo_text(data, save_path, qr_size, text, font_name, logo_path=None):
     """
     生成带有Logo和文本的二维码
     :param data: 二维码数据
-    :param logo_path: Logo文件路径
+    :param logo_path: Logo文件路径，可选
     :param save_path: 保存二维码文件的路径
     :param qr_size: 二维码图像大小
     :param text: 要添加的文本
@@ -136,14 +120,16 @@ def generate_qr_code_with_logo_text(data, logo_path, save_path, qr_size, text, f
     # 添加数据到二维码对象
     qr.add_data(data)
     qr.make(fit=True)
+
     # 生成二维码图像
     qr_img = qr.make_image(fill_color="black", back_color="white").convert('RGBA')
 
     # 调整二维码图像大小
     qr_img = qr_img.resize((qr_size, qr_size), Image.Resampling.LANCZOS)
 
-    # 添加Logo到二维码
-    add_logo_to_qr(qr_img, logo_path)
+    # 如果提供了Logo路径，则添加Logo到二维码
+    if logo_path:
+        add_logo_to_qr(qr_img, logo_path)
 
     # 创建一个新的图像，包含二维码和文本
     total_height = qr_size + 20  # 给文本留出空间，20像素可以根据需要调整
@@ -154,8 +140,8 @@ def generate_qr_code_with_logo_text(data, logo_path, save_path, qr_size, text, f
     draw = ImageDraw.Draw(img)
 
     # 20 字体大小
-    font = ImageFont.truetype(os.path.join(fonts_path, font_name), 20)
-
+    font_path = os.path.join(fonts_path, font_name)
+    font = ImageFont.truetype(font_path, 20)
     text_bbox = draw.textbbox((0, 0), text, font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
@@ -181,17 +167,17 @@ def generate_qr_codes(fileName, qr_size, logo_name):
         data_list = MyExcel().read_data(file_path, sheet_name)
         for item in data_list:
             data = item['二维码链接']
-            directory = os.path.join(QRCodes_path, str(item['店铺ID']))
+            directory = os.path.join(QRCodes_path, sheet_name)
             # 如果目录不存在，则创建目录
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            save_path = os.path.join(directory, f"{item['店铺ID']}_{item['桌台名称']}.png")
+            save_path = os.path.join(directory, f"{item['文字标签']}.png")
             generate_qr_code_with_logo(data, logo_path, save_path, qr_size)
 
 
 # 带有logo和文本的二维码
-def generate_qr_codes_text(fileName, qr_size, logo_name, font_name):
+def generate_qr_codes_text(fileName, qr_size, logo_name: str = None, font_name: str = None):
     """
     生成带有Logo和文本的二维码
     :param fileName: Excel文件名
@@ -204,40 +190,51 @@ def generate_qr_codes_text(fileName, qr_size, logo_name, font_name):
 
     # 调用get_sheet_names函数获取Excel文件中所有工作表的名称
     sheet_names = MyExcel().get_sheet_names(file_path)
-    logo_path = os.path.join(logos_path, logo_name)  # 上传的Logo文件路径
+    # 上传的Logo文件路径
+    logo_path = os.path.join(logos_path, logo_name) if logo_name else None
 
     for sheet_name in sheet_names:
         data_list = MyExcel().read_data(file_path, sheet_name)
         for item in data_list:
             data = item['二维码链接']
-            text = item['二维码备注']
+            text = item['文字标签']
             directory = os.path.join(QRCodes_path, sheet_name)
 
             # 如果目录不存在，则创建目录
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
-            save_path = os.path.join(directory, f"{item['二维码备注']}.png")
-            generate_qr_code_with_logo_text(data, logo_path, save_path, qr_size, text, font_name)
+            save_path = os.path.join(directory, f"{item['文字标签']}.png")
+            if logo_name is None:
+                generate_qr_code_with_logo_text(data, save_path, qr_size, text, font_name)
+            else:
+                generate_qr_code_with_logo_text(data, save_path, qr_size, text, font_name, logo_path)
 
 
-def qr_code_generation(qrCodeStatus, fileName, qr_size, logo_name=None, font_name=None):
+def qr_code_generation(qrCodeStatus: int, fileName: str, qr_size: int, logo_name: str = None, font_name: str = None):
     """
-    二维码生成
-    :param qrCodeStatus: 二维码生成方式
-    :param fileName: Excel文件名
-    :param qr_size: 二维码图像大小
-    :param logo_name: Logo文件名
-    :param font_name: 文本字体名称
+    生成二维码
+    :param qrCodeStatus: 生成方式
+    :param fileName: Excel 文件名
+    :param qr_size: 二维码大小
+    :param logo_name: logo 文件名
+    :param font_name: 文字字体
     """
+
+    if qrCodeStatus not in [1, 2, 3]:
+        print("请选择正确的二维码生成方式")
+        return
+
     if qrCodeStatus == 1:
         generate_qr_codes(fileName, qr_size, logo_name)
     elif qrCodeStatus == 2:
-        generate_qr_codes_text(fileName, qr_size, logo_name, font_name)
+        generate_qr_codes_text(fileName, qr_size, font_name, logo_name)
     elif qrCodeStatus == 3:
         generate_qr_code(fileName, qr_size)
-    else:
-        print("请选择正确的二维码生成方式")
 
 
-qr_code_generation(2, 'shop_01.xlsx', 300, '1.png', 'simhei.ttf')
+# Example usage
+# qr_code_generation(1, 'shop_02.xlsx', 300, 'simhei.ttf', '1.png')
+qr_code_generation(1, 'shop_02.xlsx', 300, '1.png')
+
+# qr_code_generation(2, 'shop_02.xlsx', 300, 'simhei.ttf')

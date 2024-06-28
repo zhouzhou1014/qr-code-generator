@@ -72,7 +72,7 @@ class MyExcel:
 
 if __name__ == '__main__':
     # openxls_create()
-    # data_path = os.path.join(BasicData_path, 'shop_01.xlsx')
+    # data_path = os.path.join(BasicData_path, 'shop_02.xlsx')
     #
     # basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     # me = MyExcel().read_data(data_path, "76658448")
