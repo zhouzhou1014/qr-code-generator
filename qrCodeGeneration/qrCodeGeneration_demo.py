@@ -30,9 +30,9 @@ def generate_qr_code(fileName, qr_size):
         for item in data_list:
             # 创建二维码对象
             qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_L,
-                box_size=10,
+                version=10,  # 增加版本号，范围为1到40
+                error_correction=qrcode.constants.ERROR_CORRECT_H,  # 高级别错误校正
+                box_size=10,  # 增加每个小方块的像素数
                 border=4,
             )
 
@@ -76,9 +76,9 @@ def add_logo_to_qr(qr_img, logo_path):
 def generate_qr_code_with_logo(data, logo_path, save_path, qr_size):
     # 创建二维码对象
     qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
+        version=10,  # 增加版本号，范围为1到40
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # 高级别错误校正
+        box_size=10,  # 增加每个小方块的像素数
         border=4,
     )
 
@@ -111,9 +111,9 @@ def generate_qr_code_with_logo_text(data, save_path, qr_size, text, font_name, l
     """
     # 创建二维码对象
     qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
+        version=10,  # 增加版本号，范围为1到40
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # 高级别错误校正
+        box_size=10,  # 增加每个小方块的像素数
         border=4,
     )
 
@@ -141,12 +141,13 @@ def generate_qr_code_with_logo_text(data, save_path, qr_size, text, font_name, l
 
     # 20 字体大小
     font_path = os.path.join(fonts_path, font_name)
-    font = ImageFont.truetype(font_path, 20)
+    # 50 文字大小
+    font = ImageFont.truetype(font_path, 50)
     text_bbox = draw.textbbox((0, 0), text, font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
     text_x = (qr_size - text_width) // 2
-    text_y = qr_size - 15  # 在二维码下方-10像素处开始绘制文本
+    text_y = qr_size - 35  # 在二维码下方-10像素处开始绘制文本
     draw.text((text_x, text_y), text, font=font, fill="black")
 
     # 保存最终图像
@@ -235,6 +236,6 @@ def qr_code_generation(qrCodeStatus: int, fileName: str, qr_size: int, logo_name
 
 # Example usage
 # qr_code_generation(1, 'shop_02.xlsx', 300, 'simhei.ttf', '1.png')
-qr_code_generation(1, 'shop_02.xlsx', 300, '1.png')
+# qr_code_generation(3, 'shop_02.xlsx', 300)
 
-# qr_code_generation(2, 'shop_02.xlsx', 300, 'simhei.ttf')
+qr_code_generation(2, 'shop_02.xlsx', 600, 'simhei.ttf')
